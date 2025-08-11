@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
       })
       
       // 如果有行程，获取行程的活动信息
-      let currentVehicleDates: Record<string, Set<string>> = {}
+      const currentVehicleDates = new Map<string, Set<string>>()
       if (currentSchedule?.itineraryId) {
         const itinerary = await prisma.itinerary.findUnique({
           where: { id: currentSchedule.itineraryId },
@@ -113,10 +113,10 @@ export async function POST(request: NextRequest) {
             if (activity.date && activity.guides && Array.isArray(activity.guides)) {
               for (const guide of activity.guides) {
                 if (guide.vehicleId) {
-                  if (!currentVehicleDates[guide.vehicleId]) {
-                    currentVehicleDates[guide.vehicleId] = new Set<string>()
+                  if (!currentVehicleDates.has(guide.vehicleId)) {
+                    currentVehicleDates.set(guide.vehicleId, new Set<string>())
                   }
-                  currentVehicleDates[guide.vehicleId].add(activity.date)
+                  currentVehicleDates.get(guide.vehicleId)?.add(activity.date)
                 }
               }
             }
@@ -130,50 +130,37 @@ export async function POST(request: NextRequest) {
         if (!vehicle) continue
 
         const occ = Array.isArray((vehicle as any).occupations) ? (vehicle as any).occupations as any[] : []
-        const usageDates = new Set<string>()
+        const conflictingDates = new Set<string>()
         // 非“使用/待命”的状态（如 事故/维修/保养/出租）为硬冲突
-        const hardBlockDateToType = new Map<string, string>()
         for (const o of occ) {
-          if (!o || !Array.isArray(o.dates)) continue
-          for (const d of o.dates) {
-            const ds = typeof d === 'string' ? d : formatYMDLocal(new Date(d))
-            if (o.type === '使用') {
-              usageDates.add(ds)
-            } else if (o.type !== '待命') {
-              hardBlockDateToType.set(ds, o.type)
-            }
+          // Consider all non-'待命' occupations as conflicts
+          if (o && o.type !== '待命' && Array.isArray(o.dates)) {
+            for (const d of o.dates) conflictingDates.add(d)
           }
         }
 
         for (const date of dates) {
-          const dateStr = (typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date))
-            ? date
-            : formatYMDLocal(new Date(date))
+          const dateStr = date // date is already YYYY-MM-DD from frontend
+          
+          // Check if there's a hard conflict (any non-'待命' occupation)
+          if (conflictingDates.has(dateStr)) {
+            // If the conflict is '使用' type, check if it's part of the current schedule (方案2)
+            const isUsageConflict = occ.some((o: { type: string; dates: string[] }) => o.type === '使用' && Array.isArray(o.dates) && o.dates.includes(dateStr));
+            const currentDates = currentVehicleDates.get(vehicleId);
+            const isCurrentScheduleUsage = currentDates && currentDates.has(dateStr);
 
-          // 硬冲突优先拦截（事故/维修/保养/出租 等）
-          const hardType = hardBlockDateToType.get(dateStr)
-          if (hardType) {
-            conflicts.push({
-              type: 'vehicle',
-              id: vehicleId,
-              name: `${(vehicle as any).make} ${(vehicle as any).model} (${(vehicle as any).plateNumber})`,
-              date: dateStr,
-              message: `车辆 ${(vehicle as any).plateNumber} 在 ${dateStr} 为“${hardType}”状态，不可安排`
-            })
-            continue
-          }
-
-          // “使用”冲突（排除当前行程自身已安排的日期 → 方案2）
-          if (usageDates.has(dateStr)) {
-            const currentDates = currentVehicleDates[vehicleId]
-            const isCurrentSchedule = currentDates && currentDates.has(dateStr)
-            if (!isCurrentSchedule) {
+            if (isUsageConflict && isCurrentScheduleUsage) {
+              // This is a '使用' conflict but it's for the current tour, so it's allowed (方案2)
+              continue; 
+            } else {
+              // This is either a non-'使用' conflict (hard conflict) or a '使用' conflict from another tour
+              const conflictType = occ.find((o: { type: string; dates: string[] }) => o.dates?.includes(dateStr))?.type || '占用';
               conflicts.push({
                 type: 'vehicle',
                 id: vehicleId,
-                name: `${(vehicle as any).make} ${(vehicle as any).model} (${(vehicle as any).plateNumber})`,
+                name: `${(vehicle as { make: string; model: string; plateNumber: string }).make} ${(vehicle as { make: string; model: string; plateNumber: string }).model} (${(vehicle as { make: string; model: string; plateNumber: string }).plateNumber})`,
                 date: dateStr,
-                message: `车辆 ${(vehicle as any).plateNumber} 在 ${dateStr} 已被占用`
+                message: `车辆 ${(vehicle as { make: string; model: string; plateNumber: string }).plateNumber} 在 ${dateStr} 为"${conflictType}"状态，不可安排`
               })
             }
           }

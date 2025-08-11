@@ -71,17 +71,7 @@ export async function PUT(
       return NextResponse.json({ error: '权限不足' }, { status: 403 })
     }
 
-    const {
-      plateNumber,
-      make,
-      model,
-      year,
-      type,
-      capacity,
-      occupations,
-      notes,
-      isActive
-    } = await request.json()
+    const { make, model, plateNumber, year, capacity, type, notes, occupations } = await request.json()
 
     if (!plateNumber || !make || !model || !year || !type || !capacity) {
       return NextResponse.json(
