@@ -5,6 +5,7 @@
 - [x] 创建了 vercel.json 配置文件
 - [x] 创建了部署说明文档
 - [x] 创建了构建配置文件 (next.config.js, .eslintrc.json)
+- [x] **解决了 Prisma Client 生成问题** ✅
 - [x] 本地构建测试通过 ✅
 
 ## 🔧 第二步：Vercel 项目创建
@@ -18,7 +19,7 @@
 - [ ] Project Name: `tourmaster`
 - [ ] Framework Preset: `Next.js` (自动检测)
 - [ ] Root Directory: `./` (默认)
-- [ ] Build Command: `npm run build` (自动检测)
+- [ ] Build Command: `chmod +x vercel-build.sh && ./vercel-build.sh` (自定义脚本)
 - [ ] Output Directory: `.next` (自动检测)
 - [ ] Install Command: `npm install` (自动检测)
 
@@ -87,4 +88,11 @@ NEXTAUTH_URL=https://tourmaster.ch
 **构建配置说明**:
 - `next.config.js`: 禁用了ESLint和TypeScript检查以让构建通过
 - `.eslintrc.json`: 配置了ESLint规则（当前未生效，被next.config.js覆盖）
-- 这些配置是为了快速部署，后续可以逐步修复代码质量问题 
+- `vercel-build.sh`: 自定义构建脚本，确保Prisma Client正确生成
+- `vercel.json`: 使用自定义构建脚本，优化Vercel部署
+- 这些配置是为了快速部署，后续可以逐步修复代码质量问题
+
+**Prisma 配置说明**:
+- Prisma Client 现在生成到 `./prisma/generated/client` 目录
+- 构建过程中会自动运行 `prisma generate --no-engine`
+- 解决了 Vercel 部署时的 Prisma Client 过时问题 
