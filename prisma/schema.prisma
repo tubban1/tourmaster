@@ -1,0 +1,216 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Agency {
+  id                     String                  @id @default(cuid())
+  name                   String
+  contactEmail           String
+  contactPhone           String
+  address                String
+  isActive               Boolean                 @default(true)
+  platformAdminId        String
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
+  agencyGuideAssignments AgencyGuideAssignment[]
+  itineraries            Itinerary[]
+  suppliers              Supplier[]
+  tours                  Tour[]
+  users                  User[]
+  vehicles               Vehicle[]
+
+  @@map("agencies")
+}
+
+model User {
+  id                     String                  @id @default(cuid())
+  agencyId               String
+  username               String                  @unique
+  passwordHash           String?
+  email                  String
+  role                   String
+  isActive               Boolean                 @default(true)
+  openid                 String?
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
+  agencyGuideAssignments AgencyGuideAssignment[]
+  createdItineraries     Itinerary[]             @relation("CreatedBy")
+  salesManagedTours      Tour[]                  @relation("SalesManager")
+  agency                 Agency                  @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+
+  @@map("users")
+}
+
+model Itinerary {
+  id             String   @id @default(cuid())
+  agencyId       String
+  name           String
+  description    String
+  durationDays   Int
+  destinations   Json
+  activities     Json
+  costEstimation Float
+  inclusion      Json
+  exclusion      Json
+  isActive       Boolean  @default(true)
+  createdBy      String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  agency         Agency   @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  creator        User     @relation("CreatedBy", fields: [createdBy], references: [id])
+
+  @@map("itineraries")
+}
+
+model Tour {
+  id                   String               @id @default(cuid())
+  agencyId             String
+  name                 String
+  itineraryId          String?              @unique
+  status               String
+  maxCapacity          Int
+  currentMembersCount  Int                  @default(0)
+  salesManagerId       String?
+  actualCost           Float?
+  actualRevenue        Float?
+  notes                String?
+  overallArrivalTime   DateTime?
+  overallDepartureTime DateTime?
+  pickupSignInfo       String?
+  flightDetails        Json?
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+  serviceReservations  ServiceReservation[]
+  members              TourMember[]
+  agency               Agency               @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  salesManager         User?                @relation("SalesManager", fields: [salesManagerId], references: [id])
+
+  @@map("tours")
+}
+
+model TourMember {
+  id                    String   @id @default(cuid())
+  tourId                String
+  firstName             String
+  lastName              String
+  gender                String
+  dateOfBirth           DateTime
+  passportNumber        String
+  contactEmail          String?
+  contactPhone          String?
+  emergencyContactName  String?
+  emergencyContactPhone String?
+  healthNotes           String?
+  dietaryRestrictions   String?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  tour                  Tour     @relation(fields: [tourId], references: [id], onDelete: Cascade)
+
+  @@map("tour_members")
+}
+
+model TourGuide {
+  id                String                  @id @default(cuid())
+  name              String
+  gender            String
+  contactPhone      String
+  email             String
+  languages         Json
+  specialties       Json
+  rating            Float
+  occupiedDates     Json
+  notes             String?
+  isActive          Boolean                 @default(true)
+  createdAt         DateTime                @default(now())
+  updatedAt         DateTime                @updatedAt
+  agencyAssignments AgencyGuideAssignment[]
+
+  @@map("tour_guides")
+}
+
+model AgencyGuideAssignment {
+  id                         String    @id @default(cuid())
+  agencyId                   String
+  guideId                    String
+  userId                     String?
+  agencySpecificEmployeeId   String
+  agencySpecificContractType String
+  agencySpecificBaseSalary   Float
+  isActiveInAgency           Boolean   @default(true)
+  joinedAgencyAt             DateTime  @default(now())
+  leftAgencyAt               DateTime?
+  createdAt                  DateTime  @default(now())
+  updatedAt                  DateTime  @updatedAt
+  agency                     Agency    @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  guide                      TourGuide @relation(fields: [guideId], references: [id], onDelete: Cascade)
+  user                       User?     @relation(fields: [userId], references: [id])
+
+  @@unique([agencyId, guideId])
+  @@map("agency_guide_assignments")
+}
+
+model Vehicle {
+  id          String   @id @default(cuid())
+  agencyId    String
+  plateNumber String
+  type        String
+  make        String
+  model       String
+  capacity    Int
+  year        Int
+  occupations Json     @default("[{\"type\": \"待命\", \"dates\": []}]")
+  notes       String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  agency      Agency   @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+
+  @@map("vehicles")
+}
+
+model Supplier {
+  id                  String               @id @default(cuid())
+  agencyId            String
+  name                String
+  type                String
+  contactPerson       String
+  contactEmail        String
+  contactPhone        String
+  address             String
+  serviceOfferings    Json
+  notes               String?
+  isActive            Boolean              @default(true)
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  serviceReservations ServiceReservation[]
+  agency              Agency               @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+
+  @@map("suppliers")
+}
+
+model ServiceReservation {
+  id                 String   @id @default(cuid())
+  tourId             String
+  supplierId         String
+  serviceType        String
+  description        String
+  startDate          DateTime
+  endDate            DateTime
+  quantity           Int
+  unitPrice          Float
+  totalCost          Float
+  status             String
+  confirmationNumber String
+  bookedBy           String
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  supplier           Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  tour               Tour     @relation(fields: [tourId], references: [id], onDelete: Cascade)
+
+  @@map("service_reservations")
+}
