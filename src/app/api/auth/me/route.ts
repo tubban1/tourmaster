@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyTokenFromRequest } from '@/lib/auth'
+import { prisma } from '@/lib/prisma'
 
 export async function GET(request: NextRequest) {
   try {
@@ -8,12 +9,29 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: '未授权访问' }, { status: 401 })
     }
 
+    // 获取旅行社信息
+    let agency = null
+    if (payload.agencyId) {
+      agency = await prisma.agency.findUnique({
+        where: { id: payload.agencyId },
+        select: {
+          id: true,
+          name: true,
+          contactEmail: true,
+          contactPhone: true,
+          address: true,
+          isActive: true
+        }
+      })
+    }
+
     return NextResponse.json({
       userId: payload.userId,
       username: payload.username,
       email: payload.email,
       role: payload.role,
-      agencyId: payload.agencyId
+      agencyId: payload.agencyId,
+      agency
     })
   } catch (error) {
     console.error('获取用户信息失败:', error)

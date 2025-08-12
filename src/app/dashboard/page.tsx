@@ -87,9 +87,9 @@ export default function DashboardPage() {
       icon: '📅'
     },
     {
-      title: '供应商管理',
-      description: '管理供应商信息',
-      href: '/suppliers',
+      title: '旅行社管理',
+      description: '管理旅行社信息',
+      href: '/agencies',
       icon: '🏢'
     }
   ]

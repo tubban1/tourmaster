@@ -67,10 +67,10 @@ export default function Sidebar({ user }: SidebarProps) {
       description: '管理资源排班'
     },
     {
-      title: '供应商管理',
-      href: '/suppliers',
+      title: '旅行社管理',
+      href: '/agencies',
       icon: '🏢',
-      description: '管理供应商信息'
+      description: '管理旅行社信息'
     }
   ]
 

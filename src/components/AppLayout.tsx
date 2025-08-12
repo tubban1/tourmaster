@@ -23,17 +23,40 @@ export default function AppLayout({ children }: AppLayoutProps) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // 这里应该从API获取用户信息
-    // 暂时使用模拟数据
-    setUser({
-      id: '1',
-      username: 'admin',
-      email: 'admin@example.com',
-      role: 'agency_admin',
-      agencyId: '1',
-      agency: { name: '示例旅行社' }
-    })
-    setLoading(false)
+    const fetchUserInfo = async () => {
+      try {
+        const response = await fetch('/api/auth/me')
+        if (response.ok) {
+          const userData = await response.json()
+          setUser(userData)
+        } else {
+          // 如果获取用户信息失败，使用默认数据
+          setUser({
+            id: '1',
+            username: 'admin',
+            email: 'admin@example.com',
+            role: 'agency_admin',
+            agencyId: '1',
+            agency: { name: '加载中...' }
+          })
+        }
+      } catch (error) {
+        console.error('获取用户信息错误:', error)
+        // 使用默认数据
+        setUser({
+          id: '1',
+          username: 'admin',
+          email: 'admin@example.com',
+          role: 'agency_admin',
+          agencyId: '1',
+          agency: { name: '加载中...' }
+        })
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchUserInfo()
   }, [])
 
   if (loading) {

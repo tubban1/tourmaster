@@ -2,19 +2,31 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { verifyTokenFromRequest } from '@/lib/auth'
 
-// 获取所有旅行社（仅平台超级管理员）
+// 获取旅行社列表
 export async function GET(request: NextRequest) {
   try {
     const payload = await verifyTokenFromRequest(request)
-    if (!payload || payload.role !== 'platform_super_admin') {
-      return NextResponse.json({ error: '权限不足' }, { status: 403 })
+    if (!payload) {
+      return NextResponse.json({ error: '未授权' }, { status: 401 })
     }
 
-    const agencies = await prisma.agency.findMany({
-      orderBy: { createdAt: 'desc' }
-    })
+    // 平台超级管理员可以查看所有旅行社
+    if (payload.role === 'platform_super_admin') {
+      const agencies = await prisma.agency.findMany({
+        orderBy: { createdAt: 'desc' }
+      })
+      return NextResponse.json(agencies)
+    }
 
-    return NextResponse.json(agencies)
+    // 旅行社管理员只能查看自己的旅行社
+    if (payload.role === 'agency_admin') {
+      const agency = await prisma.agency.findUnique({
+        where: { id: payload.agencyId }
+      })
+      return NextResponse.json([agency])
+    }
+
+    return NextResponse.json({ error: '权限不足' }, { status: 403 })
   } catch (error) {
     console.error('Get agencies error:', error)
     return NextResponse.json(
@@ -29,7 +41,7 @@ export async function POST(request: NextRequest) {
   try {
     const payload = await verifyTokenFromRequest(request)
     if (!payload || payload.role !== 'platform_super_admin') {
-      return NextResponse.json({ error: '权限不足' }, { status: 403 })
+      return NextResponse.json({ error: '只有平台超级管理员才能创建新旅行社' }, { status: 403 })
     }
 
     const { name, contactEmail, contactPhone, address } = await request.json()
