@@ -75,7 +75,7 @@ export default function InitPage() {
                         <div className="mt-2 text-sm text-yellow-700">
                           <p>此操作将创建测试数据，包括：</p>
                           <ul className="list-disc list-inside mt-1">
-                            <li>示例旅行社</li>
+                            <li>测试旅行社</li>
                             <li>测试用户账号</li>
                             <li>导游和车辆数据</li>
                             <li>行程和旅行团</li>

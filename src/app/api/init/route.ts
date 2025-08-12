@@ -37,13 +37,13 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    // 创建示例旅行社
+    // 创建测试旅行社
     const agency = await prisma.agency.create({
       data: {
-        name: '环球旅行社',
-        contactEmail: 'contact@globaltravel.com',
+        name: '测试旅行社',
+        contactEmail: 'contact@testtravel.com',
         contactPhone: '+86 138 0000 0000',
-        address: '北京市朝阳区建国路88号',
+        address: '北京市朝阳区测试路123号',
         isActive: true,
         platformAdminId: superAdmin.id
       }
@@ -240,7 +240,7 @@ export async function POST(request: NextRequest) {
         notes: '春季团，适合摄影爱好者',
         overallArrivalTime: new Date('2025-03-15T09:00:00Z'),
         overallDepartureTime: new Date('2025-03-21T18:00:00Z'),
-        pickupSignInfo: '张经理（环球旅行社）',
+        pickupSignInfo: '张经理（测试旅行社）',
         flightDetails: {
           outboundFlight: {
             flightNumber: 'LX188',
