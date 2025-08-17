@@ -70,14 +70,29 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       )
     }
-    // agencyId 必填，如未传则自动分配一个平台默认agencyId
     let agencyId = inputAgencyId;
+    // 如果是agency_admin且未传agencyId，则自动创建默认旅行社
+    if (role === 'agency_admin' && !agencyId) {
+      const now = new Date();
+      const defaultAgency = await prisma.agency.create({
+        data: {
+          name: `新旅行社-${username}-${now.getTime()}`,
+          contactEmail: email,
+          contactPhone: '',
+          address: '',
+          isActive: true,
+          platformAdminId: payload.id
+        }
+      });
+      agencyId = defaultAgency.id;
+    }
+    // 其他角色未传agencyId，仍用第一个agency
     if (!agencyId) {
-      const defaultAgency = await prisma.agency.findFirst({ orderBy: { createdAt: 'asc' } });
-      if (!defaultAgency) {
+      const fallbackAgency = await prisma.agency.findFirst({ orderBy: { createdAt: 'asc' } });
+      if (!fallbackAgency) {
         return NextResponse.json({ error: '请先创建旅行社' }, { status: 400 })
       }
-      agencyId = defaultAgency.id;
+      agencyId = fallbackAgency.id;
     }
     // 密码加密
     const passwordHash = await bcrypt.hash(password, 10);
