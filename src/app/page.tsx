@@ -29,7 +29,10 @@ export default function LoginPage() {
       if (!response.ok) {
         throw new Error(data.error || '登录失败')
       }
-
+      // 登录成功，保存 token 到 localStorage
+      if (typeof window !== 'undefined' && data.token) {
+        localStorage.setItem('token', data.token);
+      }
       // 登录成功，根据用户角色跳转到相应页面
       if (data.user.role === 'platform_super_admin') {
         router.push('/admin/dashboard')

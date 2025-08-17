@@ -73,6 +73,9 @@ export async function POST(request: NextRequest) {
     let agencyId = inputAgencyId;
     // 如果是agency_admin且未传agencyId，则自动创建默认旅行社
     if (role === 'agency_admin' && !agencyId) {
+      if (!payload.userId) {
+        return NextResponse.json({ error: '平台管理员未登录或无权限' }, { status: 401 });
+      }
       const now = new Date();
       const defaultAgency = await prisma.agency.create({
         data: {
@@ -81,7 +84,7 @@ export async function POST(request: NextRequest) {
           contactPhone: '',
           address: '',
           isActive: true,
-          platformAdminId: payload.id
+          platformAdminId: payload.userId // 修正为 userId
         }
       });
       agencyId = defaultAgency.id;
