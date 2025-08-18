@@ -32,14 +32,21 @@ export function verifyToken(token: string): JWTPayload | null {
 
 export async function verifyTokenFromRequest(request: NextRequest): Promise<JWTPayload | null> {
   try {
-    const token = request.cookies.get('auth-token')?.value
-    if (!token) {
-      return null
+    const authHeader = request.headers.get('authorization');
+    let token: string | undefined;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.slice(7);
+    } else {
+      token = request.cookies.get('auth-token')?.value;
     }
-    return verifyToken(token)
+    if (!token) {
+      return null;
+    }
+    const payload = verifyToken(token);
+    return payload;
   } catch (error) {
-    console.error('Token verification error:', error)
-    return null
+    console.error('Token verification error:', error);
+    return null;
   }
 }
 

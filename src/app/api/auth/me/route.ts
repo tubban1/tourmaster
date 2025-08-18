@@ -28,7 +28,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       userId: payload.userId,
       username: payload.username,
-      email: payload.email,
       role: payload.role,
       agencyId: payload.agencyId,
       agency

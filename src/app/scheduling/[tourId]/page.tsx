@@ -686,49 +686,49 @@ export default function TourSchedulingPage() {
                                 <div className="space-y-4">
                                   {/* 第一行：导游、车辆、住宿选择 */}
                                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                                                      {/* 导游选择 */}
+                                  {/* 导游选择 */}
                                     <div className="space-y-2">
                                       <label className="block text-sm font-medium text-gray-700">
-                                        选择导游
-                                      </label>
-                                      <select
-                                        value={guide.guideId}
-                                        onChange={(e) => updateGuideAssignment(dayIndex, guideIndex, 'guideId', e.target.value)}
+                                      选择导游
+                                    </label>
+                                    <select
+                                      value={guide.guideId}
+                                      onChange={(e) => updateGuideAssignment(dayIndex, guideIndex, 'guideId', e.target.value)}
                                         className="w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm py-2"
-                                      >
-                                        <option value="">请选择导游</option>
-                                        {guides.map(g => (
-                                          <option key={g.id} value={g.id}>
-                                            {g.name} - {g.languages.join(', ')} ({g.rating}星)
-                                          </option>
-                                        ))}
-                                      </select>
+                                    >
+                                      <option value="">请选择导游</option>
+                                      {guides.map(g => (
+                                        <option key={g.id} value={g.id}>
+                                          {g.name} - {g.languages.join(', ')} ({g.rating}星)
+                                        </option>
+                                      ))}
+                                    </select>
                                       
 
-                                    </div>
+                                  </div>
 
-                                                                      {/* 车辆选择 */}
+                                  {/* 车辆选择 */}
                                     <div className="space-y-2">
                                       <label className="block text-sm font-medium text-gray-700">
-                                        选择车辆
-                                      </label>
+                                      选择车辆
+                                    </label>
                                       <div className="relative">
-                                        <select
-                                          value={guide.vehicleId || ''}
-                                          onChange={(e) => updateGuideAssignment(dayIndex, guideIndex, 'vehicleId', e.target.value)}
+                                    <select
+                                      value={guide.vehicleId || ''}
+                                      onChange={(e) => updateGuideAssignment(dayIndex, guideIndex, 'vehicleId', e.target.value)}
                                           className="w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm py-2"
-                                        >
-                                          <option value="">请选择车辆</option>
-                                          {vehicles.map(v => (
-                                            <option key={v.id} value={v.id}>
-                                              {v.make} {v.model} - {v.plateNumber} ({v.capacity}人)
-                                            </option>
-                                          ))}
-                                        </select>
+                                    >
+                                      <option value="">请选择车辆</option>
+                                      {vehicles.map(v => (
+                                        <option key={v.id} value={v.id}>
+                                          {v.make} {v.model} - {v.plateNumber} ({v.capacity}人)
+                                        </option>
+                                      ))}
+                                    </select>
                                       </div>
                                       
 
-                                    </div>
+                                  </div>
 
                                   {/* 住宿安排 */}
                                     <div className="space-y-2">
@@ -836,44 +836,44 @@ export default function TourSchedulingPage() {
                           }`}>
                             {/* 正面：日期占用情况 */}
                             <div className="p-3 bg-gray-50 rounded-md backface-hidden">
-                              <div className="text-sm font-medium text-gray-700 mb-2">
-                                日期占用情况
-                                <div className="text-xs text-gray-500 mt-1">
+                          <div className="text-sm font-medium text-gray-700 mb-2">
+                            日期占用情况
+                            <div className="text-xs text-gray-500 mt-1">
                                   范围: {generateDateRange().length > 0 ? `${new Date(generateDateRange()[0]).toLocaleDateString('zh-CN')} 至 ${new Date(generateDateRange()[generateDateRange().length - 1]).toLocaleDateString('zh-CN')}` : '无旅行日期'} 
-                                  (共{generateDateRange().length}天)
-                                </div>
-                                <div className="text-xs text-gray-400 mt-1">
+                              (共{generateDateRange().length}天)
+                            </div>
+                            <div className="text-xs text-gray-400 mt-1">
                                   仅显示旅行团日期
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            {/* 星期标题行 */}
+                            <div className="grid grid-cols-7 gap-1 text-xs font-medium text-gray-600">
+                              {['日', '一', '二', '三', '四', '五', '六'].map(day => (
+                                <div key={day} className="text-center p-1">
+                                  {day}
                                 </div>
-                              </div>
-                              <div className="space-y-2">
-                                {/* 星期标题行 */}
-                                <div className="grid grid-cols-7 gap-1 text-xs font-medium text-gray-600">
-                                  {['日', '一', '二', '三', '四', '五', '六'].map(day => (
-                                    <div key={day} className="text-center p-1">
-                                      {day}
-                                    </div>
-                                  ))}
-                                </div>
-                                
-                                {/* 日期网格 */}
-                                <div className="grid grid-cols-7 gap-1 text-xs">
-                                  {generateDateRange().map((date, index) => {
-                                    const dateObj = new Date(date)
-                                    const isOccupied = guide.occupiedDates?.some(occupiedDate => 
-                                      occupiedDate === date || 
+                              ))}
+                            </div>
+                            
+                            {/* 日期网格 */}
+                            <div className="grid grid-cols-7 gap-1 text-xs">
+                              {generateDateRange().map((date, index) => {
+                                const dateObj = new Date(date)
+                                const isOccupied = guide.occupiedDates?.some(occupiedDate => 
+                                  occupiedDate === date || 
                                       occupiedDate === date
-                                    )
-                                    const isTourDate = schedule.some(day => day.date === date)
-                                    const isAssigned = schedule.some(day => 
-                                      day.date === date && 
-                                      day.guides.some(g => g.guideId === guide.id)
-                                    )
-                                    
-                                    return (
-                                      <div
-                                        key={index}
-                                                                            className={`p-1 text-center rounded border text-xs ${
+                                )
+                                const isTourDate = schedule.some(day => day.date === date)
+                                const isAssigned = schedule.some(day => 
+                                  day.date === date && 
+                                  day.guides.some(g => g.guideId === guide.id)
+                                )
+                                
+                                return (
+                                  <div
+                                    key={index}
+                                    className={`p-1 text-center rounded border text-xs ${
                                       isOccupied 
                                         ? 'bg-red-100 border-red-300 text-red-700 border-solid' 
                                         : isAssigned
@@ -883,31 +883,31 @@ export default function TourSchedulingPage() {
                                         : 'bg-gray-100 border-gray-200 text-gray-500 border-dashed'
                                     }`}
                                         title={`${date}${isOccupied ? ' - 已占用' : isAssigned ? ' - 已安排' : isTourDate ? ' - 可安排' : ''}`}
-                                      >
-                                        <div className="font-medium text-sm">{dateObj.getDate()}</div>
-                                        <div className="text-xs opacity-75">
-                                          {dateObj.getMonth() + 1}.{dateObj.getDate()}
-                                        </div>
-                                      </div>
-                                    )
-                                  })}
-                                </div>
-                              </div>
-                              <div className="mt-2 text-xs text-gray-500 space-y-1">
-                                <div className="flex items-center space-x-2">
-                                  <div className="w-3 h-3 bg-red-100 border border-red-300 rounded"></div>
-                                  <span>已占用</span>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                  <div className="w-3 h-3 bg-blue-100 border border-blue-300 rounded"></div>
-                                  <span>已安排</span>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                  <div className="w-3 h-3 bg-green-100 border border-green-300 rounded"></div>
-                                  <span>可安排</span>
-                                </div>
+                                  >
+                                    <div className="font-medium text-sm">{dateObj.getDate()}</div>
+                                    <div className="text-xs opacity-75">
+                                      {dateObj.getMonth() + 1}.{dateObj.getDate()}
+                                    </div>
+                                  </div>
+                                )
+                              })}
+                            </div>
+                          </div>
+                          <div className="mt-2 text-xs text-gray-500 space-y-1">
+                            <div className="flex items-center space-x-2">
+                              <div className="w-3 h-3 bg-red-100 border border-red-300 rounded"></div>
+                              <span>已占用</span>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <div className="w-3 h-3 bg-blue-100 border border-blue-300 rounded"></div>
+                              <span>已安排</span>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <div className="w-3 h-3 bg-green-100 border border-green-300 rounded"></div>
+                              <span>可安排</span>
+                            </div>
 
-                              </div>
+                            </div>
                               
                               {/* 翻转按钮 - 右下角 */}
                               <button
@@ -1066,7 +1066,7 @@ export default function TourSchedulingPage() {
                               <span>可安排</span>
                             </div>
 
-                          </div>
+                            </div>
                           
                               {/* 翻转按钮 - 右下角 */}
                               <button
